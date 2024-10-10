@@ -1,4 +1,6 @@
+import os
 import re
+
 import requests
 
 
@@ -73,13 +75,25 @@ def sort_messages_by_time(deduplicated_data):
     return sorted(deduplicated_data.items(), key=lambda x: x[1][1])
 
 
-def write_to_md_file(sorted_data, output_file_path):
-    """Writes the sorted data to a markdown file.
+def write_to_md_file(
+    sorted_data,
+    output_file_name,
+    directory="collection",
+):
+    """Writes the sorted data to a markdown file, with a default directory.
 
     Args:
         sorted_data (list): A list of sorted message content.
-        output_file_path (str): The file path where the markdown file will be written.
+        output_file_name (str, optional): The name of the output markdown file.
+        directory (str, optional): The directory where the markdown file will be saved.
+                                   Defaults to "collection".
     """
+    # Ensure the directory exists
+    os.makedirs(directory, exist_ok=True)
+
+    # Full output file path
+    output_file_path = os.path.join(directory, output_file_name)
+
     with open(output_file_path, "w", encoding="utf-8") as md_file:
         for parts_content, (author, _) in sorted_data:
             if author == "assistant":
@@ -87,3 +101,5 @@ def write_to_md_file(sorted_data, output_file_path):
             else:
                 md_file.write(f"**You**:\n\n{parts_content}\n\n")
             md_file.write("---\n\n")
+
+    return output_file_path
