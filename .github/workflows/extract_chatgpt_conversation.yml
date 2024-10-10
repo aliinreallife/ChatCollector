@@ -24,14 +24,19 @@ jobs:
           pip install requests  # Assuming you use requests to fetch content
 
       - name: Extract ChatGPT conversation
+        id: extract_conversation
         run: |
           # Extract the share link from the issue body
           export SHARE_LINK=$(echo "${{ github.event.issue.body }}" | grep -oP 'https://chatgpt.com/share/\S+')
 
-          # Run the Python main to fetch and process the conversation
-          python main.py --share-link "$SHARE_LINK"
+          # Validate and run the Python script
+          if ! python main.py --share-link "$SHARE_LINK"; then
+            echo "Invalid share link format, labeling as failed and closing the issue"
+            exit 1  # Fail the step to trigger the "failure" steps
+          fi
 
       - name: Commit Markdown file
+        if: success()
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -39,16 +44,32 @@ jobs:
           git commit -m "Add ChatGPT conversation from $SHARE_LINK"
           git push
 
-      # Step to add "done" label to the issue
       - name: Label issue as "done"
+        if: success()
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: "done"
-        continue-on-error: true # Ensure the workflow continues even if the label fails to apply
+        continue-on-error: true
 
-      # Step to close the issue
       - name: Close issue
+        if: success()
+        run: |
+          curl -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -d '{"state": "closed"}'
+
+      - name: Label issue as "failed"
+        if: failure()
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "failed"
+
+      - name: Close issue on failure
+        if: failure()
         run: |
           curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
