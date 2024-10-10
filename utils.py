@@ -84,7 +84,7 @@ def write_to_md_file(
 
     Args:
         sorted_data (list): A list of sorted message content.
-        output_file_name (str, optional): The name of the output markdown file.
+        output_file_name (str): The name of the output markdown file.
         directory (str, optional): The directory where the markdown file will be saved.
                                    Defaults to "collection".
     """

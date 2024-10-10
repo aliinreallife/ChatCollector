@@ -1,5 +1,3 @@
-# main.py
-
 from utils import (
     fetch_content_from_url,
     extract_messages,
