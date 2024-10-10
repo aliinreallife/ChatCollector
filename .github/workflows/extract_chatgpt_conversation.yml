@@ -6,7 +6,7 @@ on:
 
 jobs:
   validate-link:
-    if: contains(github.event.label.name, 'extraction') # Run only if the "extraction" label is added
+    if: contains(github.event.label.name, 'extraction') 
     runs-on: ubuntu-latest
     steps:
       - name: Check link format
@@ -27,7 +27,7 @@ jobs:
             }
 
   extract-conversation:
-    needs: validate-link # This ensures that this job only runs if link validation is successful
+    needs: validate-link
     if: needs.validate-link.outputs.valid == 'true'
     runs-on: ubuntu-latest
 
@@ -52,7 +52,7 @@ jobs:
 
           # Run Python script with the share link
           python main.py --share-link "$SHARE_LINK" || echo "Extraction failed" && echo "::set-output name=failed::true"
-        continue-on-error: true # Ensure workflow doesn't fail even if extraction fails
+        continue-on-error: true
 
       - name: Commit Markdown file
         if: steps.extract_conversation.outputs.failed != 'true'
@@ -87,7 +87,7 @@ jobs:
             -d '{"state": "closed"}'
 
   close-issue-invalid-link:
-    needs: validate-link # This job depends on the link validation
+    needs: validate-link
     if: needs.validate-link.outputs.valid == 'false'
     runs-on: ubuntu-latest
 
