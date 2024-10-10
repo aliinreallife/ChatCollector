@@ -20,14 +20,17 @@ def main():
 
     sharable_link = args.share_link
 
+    if not validate_link(sharable_link):
+        print(f"Invalid share link format: {sharable_link}")
+        return False
+
     content = fetch_content_from_url(sharable_link)
 
     if content is None or len(content) == 0:
         print(f"Failed to fetch content from the link: {sharable_link}")
         return False
 
-    # Regular expression to extract messages
-    pattern = r'"message":\{.*?"author":\{"role":"(.*?)".*?"create_time":([0-9.]+).*?"parts":\s*\[(.*?)\]'
+    pattern = r'"message":\{.*?"author":"(.*?)".*?"create_time":([0-9.]+).*?"parts":\s*\[(.*?)\]'
 
     # Extract and process the data
     matches = extract_messages(content, pattern)
@@ -49,5 +52,4 @@ def main():
 
 if __name__ == "__main__":
     success = main()
-    if not success:
-        print("The process failed.")
+    exit(0 if success else 1)
