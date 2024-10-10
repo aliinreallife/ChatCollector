@@ -1,5 +1,6 @@
 import argparse
 import re
+import sys
 from utils import (
     deduplicate_messages,
     extract_messages,
@@ -21,13 +22,17 @@ def main():
     sharable_link = args.share_link
 
     if not validate_link(sharable_link):
-        print(f"Invalid share link format: {sharable_link}")
+        print(f"Invalid share link format: {sharable_link}", file=sys.stderr)
         return False
 
-    content = fetch_content_from_url(sharable_link)
+    try:
+        content = fetch_content_from_url(sharable_link)
+    except Exception as e:
+        print(f"Error fetching content from the link: {sharable_link}. Error: {e}", file=sys.stderr)
+        return False
 
     if content is None or len(content) == 0:
-        print(f"Failed to fetch content from the link: {sharable_link}")
+        print(f"Failed to fetch or empty content from the link: {sharable_link}", file=sys.stderr)
         return False
 
     pattern = r'"message":\{.*?"author":"(.*?)".*?"create_time":([0-9.]+).*?"parts":\s*\[(.*?)\]'
@@ -36,7 +41,7 @@ def main():
     matches = extract_messages(content, pattern)
 
     if not matches:
-        print(f"Failed to extract messages from the content: {sharable_link}")
+        print(f"Failed to extract messages from the content: {sharable_link}", file=sys.stderr)
         return False
 
     deduplicated_data = deduplicate_messages(matches)
@@ -44,7 +49,11 @@ def main():
 
     output_filename = f"{sharable_link.split('/')[-1]}.md"
 
-    output_file_path = write_to_md_file(sorted_data, output_filename)
+    try:
+        output_file_path = write_to_md_file(sorted_data, output_filename)
+    except Exception as e:
+        print(f"Error writing content to file: {output_filename}. Error: {e}", file=sys.stderr)
+        return False
 
     print(f"Sorted and deduplicated content has been saved to {output_file_path}")
     return True
