@@ -1,10 +1,12 @@
 import argparse
-
+import re
+import sys
 from utils import (
     deduplicate_messages,
     extract_messages,
     fetch_content_from_url,
     sort_messages_by_time,
+    validate_link,
     write_to_md_file,
 )
 
@@ -19,12 +21,16 @@ def main():
 
     sharable_link = args.share_link
 
+    if not validate_link(sharable_link):
+        print(f"Invalid share link format: {sharable_link}")
+        sys.exit(1)
+
     # Extract the part after the last "/" from the sharable link to use as the filename
     output_filename = f"{sharable_link.split('/')[-1]}.md"
 
     content = fetch_content_from_url(sharable_link)
 
-    pattern = r'"message":\{.*?"author":\{"role":"(.*?)".*?"create_time":([0-9.]+).*?"parts":\s*\[(.*?)\]'
+    pattern = r'"message":\{.*?"author":"(.*?)".*?"create_time":([0-9.]+).*?"parts":\s*\[(.*?)\]'
 
     # Extract and process the data
     matches = extract_messages(content, pattern)
