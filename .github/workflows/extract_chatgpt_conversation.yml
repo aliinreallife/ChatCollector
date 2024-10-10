@@ -28,8 +28,8 @@ jobs:
           # Extract the share link from the issue body
           export SHARE_LINK=$(echo "${{ github.event.issue.body }}" | grep -oP 'https://chatgpt.com/share/\S+')
 
-          # Run the Python script to fetch and process the conversation
-          python script.py --share-link "$SHARE_LINK"
+          # Run the Python main to fetch and process the conversation
+          python main.py --share-link "$SHARE_LINK"
 
       - name: Commit Markdown file
         run: |
