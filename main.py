@@ -12,8 +12,10 @@ from utils import (
 def main():
     """Main function to fetch, process, and save conversation data."""
     # Example sharable link (replace this with the actual link)
-    sharable_link = "https://chatgpt.com/share/blahblahblah"
-    output_filename = "output.md"  # Save to the collection directory
+    sharable_link = "https://chatgpt.com/share/6707e1c4-69ac-8007-b7fd-fd64170813a0"
+
+    # Extract the part after the last "/" from the sharable link to use as the filename
+    output_filename = f"{sharable_link.split('/')[-1]}.md"
 
     content = fetch_content_from_url(sharable_link)
 
