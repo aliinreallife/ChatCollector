@@ -1,0 +1,40 @@
+name: Extract ChatGPT Conversation
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  extract-conversation:
+    if: contains(github.event.label.name, 'extraction')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests  # Assuming you use requests to fetch content
+
+      - name: Extract ChatGPT conversation
+        run: |
+          # Extract the share link from the issue body
+          export SHARE_LINK=$(echo "${{ github.event.issue.body }}" | grep -oP 'https://chatgpt.com/share/\S+')
+
+          # Run the Python script to fetch and process the conversation
+          python script.py --share-link "$SHARE_LINK"
+
+      - name: Commit Markdown file
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add collection/
+          git commit -m "Add ChatGPT conversation from $SHARE_LINK"
+          git push

@@ -1,7 +1,9 @@
+import argparse
+
 from utils import (
-    fetch_content_from_url,
-    extract_messages,
     deduplicate_messages,
+    extract_messages,
+    fetch_content_from_url,
     sort_messages_by_time,
     write_to_md_file,
 )
@@ -9,8 +11,13 @@ from utils import (
 
 def main():
     """Main function to fetch, process, and save conversation data."""
-    # Example sharable link (replace this with the actual link)
-    sharable_link = "https://chatgpt.com/share/6707e1c4-69ac-8007-b7fd-fd64170813a0"
+    parser = argparse.ArgumentParser(description="Process ChatGPT share link.")
+    parser.add_argument(
+        "--share-link", required=True, help="The ChatGPT share link to process"
+    )
+    args = parser.parse_args()
+
+    sharable_link = args.share_link
 
     # Extract the part after the last "/" from the sharable link to use as the filename
     output_filename = f"{sharable_link.split('/')[-1]}.md"
@@ -28,6 +35,5 @@ def main():
     print(f"Sorted and deduplicated content has been saved to {output_file_path}")
 
 
-# Run the script
 if __name__ == "__main__":
     main()
