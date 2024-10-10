@@ -6,7 +6,7 @@ on:
 
 jobs:
   validate-link:
-    if: contains(github.event.label.name, 'extraction') 
+    if: contains(github.event.label.name, 'extraction') # Run only if the "extraction" label is added
     runs-on: ubuntu-latest
     steps:
       - name: Check link format
@@ -14,7 +14,7 @@ jobs:
         id: check_link
         with:
           script: |
-            const issueBody = github.event.issue.body;
+            const issueBody = github.context.payload.issue.body;  // Corrected line
             const linkPattern = /^https:\/\/chatgpt\.com\/share\/\S+$/;
             const shareLink = issueBody.match(linkPattern);
 
