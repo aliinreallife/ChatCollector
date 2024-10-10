@@ -5,8 +5,30 @@ on:
     types: [labeled]
 
 jobs:
+  validate-link:
+    if: contains(github.event.label.name, 'extraction') # Run only if the "extraction" label is added
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check link format
+        uses: actions/github-script@v6
+        id: check_link
+        with:
+          script: |
+            const issueBody = github.event.issue.body;
+            const linkPattern = /^https:\/\/chatgpt\.com\/share\/\S+$/;
+            const shareLink = issueBody.match(linkPattern);
+
+            if (!shareLink) {
+              core.setOutput("valid", "false");
+              core.setOutput("share_link", "");
+            } else {
+              core.setOutput("valid", "true");
+              core.setOutput("share_link", shareLink[0]);
+            }
+
   extract-conversation:
-    if: contains(github.event.label.name, 'extraction')
+    needs: validate-link # This ensures that this job only runs if link validation is successful
+    if: needs.validate-link.outputs.valid == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -26,17 +48,14 @@ jobs:
       - name: Extract ChatGPT conversation
         id: extract_conversation
         run: |
-          # Extract the share link from the issue body
-          export SHARE_LINK=$(echo "${{ github.event.issue.body }}" | grep -oP 'https://chatgpt.com/share/\S+')
+          SHARE_LINK="${{ needs.validate-link.outputs.share_link }}"
 
-          # Validate and run the Python script
-          if ! python main.py --share-link "$SHARE_LINK"; then
-            echo "Invalid share link format, labeling as failed and closing the issue"
-            exit 1  # Fail the step to trigger the "failure" steps
-          fi
+          # Run Python script with the share link
+          python main.py --share-link "$SHARE_LINK" || echo "Extraction failed" && echo "::set-output name=failed::true"
+        continue-on-error: true # Ensure workflow doesn't fail even if extraction fails
 
       - name: Commit Markdown file
-        if: success()
+        if: steps.extract_conversation.outputs.failed != 'true'
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -45,15 +64,21 @@ jobs:
           git push
 
       - name: Label issue as "done"
-        if: success()
+        if: steps.extract_conversation.outputs.failed != 'true'
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: "done"
         continue-on-error: true
 
+      - name: Label issue as "failed"
+        if: steps.extract_conversation.outputs.failed == 'true'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "failed"
+
       - name: Close issue
-        if: success()
         run: |
           curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -61,15 +86,19 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
             -d '{"state": "closed"}'
 
-      - name: Label issue as "failed"
-        if: failure()
+  close-issue-invalid-link:
+    needs: validate-link # This job depends on the link validation
+    if: needs.validate-link.outputs.valid == 'false'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Label issue as "invalid link"
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          labels: "failed"
+          labels: "invalid link"
 
-      - name: Close issue on failure
-        if: failure()
+      - name: Close issue for invalid link
         run: |
           curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
