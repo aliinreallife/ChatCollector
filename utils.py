@@ -4,6 +4,14 @@ import re
 import requests
 
 
+def validate_link(url):
+    """Validate if the given link matches the expected ChatGPT share link format."""
+    pattern = r"^https://chatgpt\.com/share/\S+$"
+    if not re.match(pattern, url):
+        return False
+    return True
+
+
 def fetch_content_from_url(url):
     """Fetches HTML content from the given sharable URL.
 
