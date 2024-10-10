@@ -38,3 +38,20 @@ jobs:
           git add collection/
           git commit -m "Add ChatGPT conversation from $SHARE_LINK"
           git push
+
+      # Step to add "done" label to the issue
+      - name: Label issue as "done"
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "done"
+        continue-on-error: true # Ensure the workflow continues even if the label fails to apply
+
+      # Step to close the issue
+      - name: Close issue
+        run: |
+          curl -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -d '{"state": "closed"}'
