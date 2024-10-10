@@ -1,10 +1,14 @@
 import re
+import requests
 
 
-def load_content(file_path):
-    """Load the content from a file."""
-    with open(file_path, "r", encoding="utf-8") as file:
-        return file.read()
+def fetch_content_from_url(url):
+    """Fetch HTML content from the given sharable URL."""
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        raise Exception(f"Failed to fetch content from URL: {url}")
 
 
 def extract_messages(content, pattern):
@@ -47,14 +51,15 @@ def write_to_md_file(sorted_data, output_file_path):
 
 
 def main():
-    # File paths
-    raw_html_path = "raw_html.txt"
+    # Example sharable link (replace this with the actual link)
+    sharable_link = "https://chatgpt.com/share/blahblahblah"
     output_file_path = "output.md"
 
-    # Regex pattern
+    content = fetch_content_from_url(sharable_link)
+
     pattern = r'"message":\{.*?"author":\{"role":"(.*?)".*?"create_time":([0-9.]+).*?"parts":\s*\[(.*?)\]'
 
-    content = load_content(raw_html_path)
+    # Extract and process the data
     matches = extract_messages(content, pattern)
     deduplicated_data = deduplicate_messages(matches)
     sorted_data = sort_messages_by_time(deduplicated_data)
