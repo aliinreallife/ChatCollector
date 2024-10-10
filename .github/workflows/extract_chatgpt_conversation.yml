@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: "3.x"
 
@@ -27,43 +27,52 @@ jobs:
         id: extract_conversation
         run: |
           # Extract the share link from the issue body
-          SHARE_LINK=$(echo "${{ github.event.issue.body }}" | grep -oP 'https://chatgpt.com/share/\S+')
+          export SHARE_LINK=$(echo "${{ github.event.issue.body }}" | grep -oP 'https://chatgpt.com/share/\S+')
 
-          # Run Python script with the share link
-          python main.py --share-link "$SHARE_LINK"
-        continue-on-error: false
+          # Validate and run the Python script
+          if ! python main.py --share-link "$SHARE_LINK"; then
+            echo "Invalid share link format, labeling as failed and closing the issue"
+            exit 1  # Fail the step to trigger the "failure" steps
+          fi
 
       - name: Commit Markdown file
-        if: steps.extract_conversation.conclusion == 'success'
+        if: success()
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git add collection/
-          git commit -m "Add ChatGPT conversation from issue #${{ github.event.issue.number }}"
+          git commit -m "Add ChatGPT conversation from $SHARE_LINK"
           git push
-        continue-on-error: false
 
       - name: Label issue as "done"
-        if: steps.extract_conversation.conclusion == 'success'
+        if: success()
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: "done"
         continue-on-error: true
 
-      - name: Label issue as "failed"
-        if: steps.extract_conversation.conclusion != 'success'
-        uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          labels: "failed"
-        continue-on-error: true
-
       - name: Close issue
+        if: success()
         run: |
           curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
             -d '{"state": "closed"}'
-        continue-on-error: true
+
+      - name: Label issue as "failed"
+        if: failure()
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "failed"
+
+      - name: Close issue on failure
+        if: failure()
+        run: |
+          curl -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -d '{"state": "closed"}'
