@@ -1,0 +1,17 @@
+name: "📄 Extract ChatGPT Conversation"
+description: Extract conversations from ChatGPT share links and generate a GitHub page automatically.
+title: "[ChatGPT Conversation]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for sharing a ChatGPT conversation!** Please provide the share link below so that we can extract the conversation and generate a GitHub page.
+
+  - type: input
+    id: chatgpt-share-link
+    attributes:
+      label: ChatGPT Share Link
+      placeholder: "https://chatgpt.com/share/blahblahblah"
+    validations:
+      required: true
