@@ -85,13 +85,14 @@ def sort_messages_by_time(deduplicated_data):
 
 def write_to_md_file(
     sorted_data,
+    title,
     output_file_name,
     directory="collection",
 ):
     """Writes the sorted data to a markdown file, with a default directory.
-
     Args:
         sorted_data (list): A list of sorted message content.
+        title (str): The title of the conversation.
         output_file_name (str): The name of the output markdown file.
         directory (str, optional): The directory where the markdown file will be saved.
                                    Defaults to "collection".
@@ -103,6 +104,9 @@ def write_to_md_file(
     output_file_path = os.path.join(directory, output_file_name)
 
     with open(output_file_path, "w", encoding="utf-8") as md_file:
+        # Add the title to the top of the file
+        md_file.write(f'---\ntitle: "{title}"\n---\n\n')
+
         for parts_content, (author, _) in sorted_data:
             if author == "assistant":
                 md_file.write(f"**ChatGPT**:\n\n{parts_content}\n\n")
@@ -111,3 +115,20 @@ def write_to_md_file(
             md_file.write("---\n\n")
 
     return output_file_path
+
+
+def extract_title_from_response(response_text):
+    """Extracts the title from the response text."""
+
+    # Define the regex pattern to find the title followed by the description
+    pattern = r'"title":"([^"]+)"'
+
+    # Use regex to search for the title followed by the correct description in the response text
+    match = re.search(pattern, response_text)
+
+    # If a match is found, print the title
+    if match:
+        title = match.group(1)
+        return title
+    else:
+        return "Title not found"

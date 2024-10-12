@@ -4,6 +4,7 @@ import sys
 from utils import (
     deduplicate_messages,
     extract_messages,
+    extract_title_from_response,
     fetch_content_from_url,
     sort_messages_by_time,
     validate_link,
@@ -40,6 +41,7 @@ def main():
         return False
     pattern = r'"message":\{.*?"author":\{"role":"(.*?)".*?"create_time":([0-9.]+).*?"parts":\s*\[(.*?)\]'
 
+    title = extract_title_from_response(content)
     # Extract and process the data
     matches = extract_messages(content, pattern)
 
@@ -55,7 +57,7 @@ def main():
     output_filename = f"{sharable_link.split('/')[-1]}.md"
 
     try:
-        output_file_path = write_to_md_file(sorted_data, output_filename)
+        output_file_path = write_to_md_file(sorted_data, title, output_filename)
     except Exception as e:
         print(
             f"Error writing content to file: {output_filename}. Error: {e}",
