@@ -1,5 +1,9 @@
 name: Extract ChatGPT Conversation
 
+permissions:
+  contents: write
+  issues: write
+
 on:
   issues:
     types: [labeled]
@@ -28,7 +32,6 @@ jobs:
         run: |
           # Extract the share link from the issue body
           export SHARE_LINK=$(echo "${{ github.event.issue.body }}" | grep -oP 'https://chatgpt.com/share/\S+')
-
           # Validate and run the Python script
           if ! python main.py --share-link "$SHARE_LINK"; then
             echo "Invalid share link format, labeling as failed and closing the issue"
