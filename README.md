@@ -29,7 +29,7 @@
 3. **GitHub Pages Publication:**
    - The extracted conversation is published on GitHub Pages, making it accessible publicly.
 
-## 🚀 Getting Started
+## 🚀 Set Up Your Own
 
 Follow these quick steps to set up ChatCollector and start extracting ChatGPT conversations:
 
