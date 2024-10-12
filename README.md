@@ -1,4 +1,4 @@
-# 📄 ChatCollector
+# 📜 ChatCollector
 
 **ChatCollector** automates the process of extracting conversations from ChatGPT share links and generates a GitHub page to display the conversation. By submitting a shareable ChatGPT conversation link via an issue, the system will automatically extract the content, convert it into a Markdown file, and publish it on GitHub Pages.
 
@@ -29,7 +29,6 @@
 3. **GitHub Pages Publication:**
    - The extracted conversation is published on GitHub Pages, making it accessible publicly.
 
-
 ## 🚀 Getting Started
 
 Follow these quick steps to set up ChatCollector and start extracting ChatGPT conversations:
@@ -53,5 +52,11 @@ Follow these quick steps to set up ChatCollector and start extracting ChatGPT co
    - Go to the **About** section on your repo’s main page and check the **Use your GitHub Pages website** option.
 
 5. **You’re All Set!**
-
    - Head to the **Issues** section, create a new issue using the provided template, and paste your ChatGPT share link. The conversation will automatically be extracted and published on GitHub Pages.
+
+> [!Note]  
+> You can use this template for either private or public repositories. However, if you're on a GitHub free plan, you won't be able to use GitHub Pages for private repositories.
+
+## ⚠️ Important
+
+I've turned off the extraction workflow in this repo to keep things tidy and avoid unnecessary content. But don’t worry—there are a few sample conversations on the GitHub Pages site to show you how it works! If you want to set it up yourself, just follow the steps and use the template—it’s super easy.
