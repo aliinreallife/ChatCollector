@@ -13,7 +13,7 @@ body:
   - type: input
     id: chatgpt-share-link
     attributes:
-      label: Your ChatGPT Share Link
+      label: Your ChatGPT Share Conversation Link
       placeholder: "https://chatgpt.com/share/blahblahblah"
     validations:
       required: true
