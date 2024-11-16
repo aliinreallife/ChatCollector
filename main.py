@@ -1,6 +1,4 @@
 import argparse
-import re
-import sys
 from utils import (
     deduplicate_messages,
     extract_messages,
